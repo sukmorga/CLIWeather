@@ -1,9 +1,7 @@
 #!/usr/bin/env node
-import dedent from 'dedent-js';
-import chalk from 'chalk';
 import { getArgs } from './helpers/args.js';
 import { getWeather } from './services/api.sevice.js';
-import { printError, printSuccess, printHelp } from './services/log.service.js';
+import { printError, printSuccess, printHelp, printWeather } from './services/log.service.js';
 import { saveKeyValue, getKeyValue, TOKEN_DICTIONARY } from './services/storage.service.js';
 
 const saveToken = async (token) => {
@@ -37,17 +35,10 @@ const saveCity = async (city) => {
 };
 
 const getForcast = async () => {
-    const cityName = await getKeyValue(TOKEN_DICTIONARY.city)
-
     try {
+        const cityName = await getKeyValue(TOKEN_DICTIONARY.city)
         const weather = await getWeather(cityName);
-        console.log(
-            dedent`Погода в городе ${chalk.bgMagenta(weather.name)}:
-            Температура: ${chalk.bgYellow(weather.main.temp)} градусов, ${chalk.bgYellow(weather.weather[0].description)}
-            Скорость ветра: ${chalk.bgRedBright(weather.wind.speed)} м/с
-            Видимость: ${chalk.bgRedBright(weather.visibility)} метров 
-            `
-        );
+        printWeather(weather);
     } catch (e) {
         if (e?.response?.status == 404) {
             printError('Неверно указан город');
@@ -64,7 +55,7 @@ const initCLI = () => {
 
     if (args.h) {
         //Вывод help
-        printHelp();
+        return printHelp();
     }
     if (args.s) {
         //Сохранить город
@@ -74,7 +65,7 @@ const initCLI = () => {
         //Сохранить токен
         return saveToken(args.t)
     }
-    getForcast();
+    return getForcast();
 };
 
 
